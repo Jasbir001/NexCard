@@ -18,7 +18,8 @@ import {
   FiMapPin,
   FiGift,
   FiSettings,
-  FiLogOut
+  FiLogOut,
+  FiInfo
 } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
@@ -27,7 +28,7 @@ export default function Navbar() {
   const router = useRouter();
   
   // 1. Get global cart and wishlist items from the Store Context
-  const { cart, wishlist, setCartOpen, userProfile, logoutUser } = useStore();
+  const { cart, wishlist, setCartOpen, userProfile, logoutUser, isLoggedIn } = useStore();
   
   // 2. React states for menus
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -161,93 +162,141 @@ export default function Navbar() {
 
             {/* Account Profile Dropdown (Desktop only) */}
             <div className="relative hidden sm:block">
-              <button
-                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-bold text-xs cursor-pointer border-none outline-none"
-              >
-                {userProfile.photo ? (
-                  <img src={userProfile.photo} alt={userProfile.name} className="h-5 w-5 rounded-full object-cover" />
-                ) : (
+              {!isLoggedIn ? (
+                // Guest Menu Button
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-bold text-xs cursor-pointer border-none outline-none"
+                >
                   <FiUser />
-                )}
-                <span className="max-w-[80px] truncate">{userProfile.name.split(' ')[0]}</span>
-                <FiChevronDown className={`transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
+                  <span>Account</span>
+                  <FiChevronDown className={`transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+              ) : (
+                // Logged-in Menu Button
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all font-bold text-xs cursor-pointer border-none outline-none"
+                >
+                  {userProfile.photo ? (
+                    <img src={userProfile.photo} alt={userProfile.name} className="h-5 w-5 rounded-full object-cover" />
+                  ) : (
+                    <FiUser />
+                  )}
+                  <span className="max-w-[80px] truncate">{userProfile.name.split(' ')[0]}</span>
+                  <FiChevronDown className={`transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+              )}
 
               {isProfileDropdownOpen && (
-                <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl z-50 animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                  <div className="px-3 py-2 border-b border-border/60 mb-1">
-                    <p className="text-xs font-bold text-text truncate">{userProfile.name}</p>
-                    <p className="text-[10px] text-zinc-400 truncate">{userProfile.email}</p>
+                !isLoggedIn ? (
+                  // Guest Dropdown Options
+                  <div className="absolute right-0 mt-3 w-48 rounded-2xl border border-border bg-card p-2 shadow-xl z-50 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                    <Link 
+                      href="/auth?tab=login" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiUser className="text-sm" />
+                      <span>Login</span>
+                    </Link>
+
+                    <Link 
+                      href="/auth?tab=register" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiUser className="text-sm" />
+                      <span>Register</span>
+                    </Link>
+
+                    <button 
+                      onClick={() => {
+                        setIsProfileDropdownOpen(false);
+                        toast('Help Center: Call 1800-NEX-CART for support.', { icon: '📞' });
+                      }}
+                      className="w-full text-left flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer border-none bg-transparent outline-none mt-1 pt-2 border-t border-border/40"
+                    >
+                      <FiInfo className="text-sm" />
+                      <span>Help Center</span>
+                    </button>
                   </div>
-                  
-                  <Link 
-                    href="/account?tab=profile" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiUser className="text-sm" />
-                    <span>My Profile</span>
-                  </Link>
+                ) : (
+                  // Logged-in Dropdown Options
+                  <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl z-50 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                    <div className="px-3 py-2 border-b border-border/60 mb-1">
+                      <p className="text-xs font-bold text-text truncate">{userProfile.name}</p>
+                      <p className="text-[10px] text-zinc-400 truncate">{userProfile.email}</p>
+                    </div>
+                    
+                    <Link 
+                      href="/account?tab=profile" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiUser className="text-sm" />
+                      <span>My Profile</span>
+                    </Link>
 
-                  <Link 
-                    href="/account?tab=orders" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiShoppingCart className="text-sm" />
-                    <span>My Orders</span>
-                  </Link>
+                    <Link 
+                      href="/account?tab=orders" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiShoppingCart className="text-sm" />
+                      <span>My Orders</span>
+                    </Link>
 
-                  <Link 
-                    href="/wishlist" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiHeart className="text-sm" />
-                    <span>Wishlist</span>
-                  </Link>
+                    <Link 
+                      href="/wishlist" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiHeart className="text-sm" />
+                      <span>Wishlist</span>
+                    </Link>
 
-                  <Link 
-                    href="/account?tab=addresses" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiMapPin className="text-sm" />
-                    <span>Saved Addresses</span>
-                  </Link>
+                    <Link 
+                      href="/account?tab=addresses" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiMapPin className="text-sm" />
+                      <span>Saved Addresses</span>
+                    </Link>
 
-                  <Link 
-                    href="/account?tab=coupons" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiGift className="text-sm" />
-                    <span>Coupons & Rewards</span>
-                  </Link>
+                    <Link 
+                      href="/account?tab=coupons" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiGift className="text-sm" />
+                      <span>Coupons & Rewards</span>
+                    </Link>
 
-                  <Link 
-                    href="/account?tab=settings" 
-                    onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
-                  >
-                    <FiSettings className="text-sm" />
-                    <span>Settings</span>
-                  </Link>
+                    <Link 
+                      href="/account?tab=settings" 
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-background hover:text-primary transition-colors cursor-pointer"
+                    >
+                      <FiSettings className="text-sm" />
+                      <span>Settings</span>
+                    </Link>
 
-                  <button 
-                    onClick={() => {
-                      logoutUser();
-                      setIsProfileDropdownOpen(false);
-                      toast.success('Logged out successfully.');
-                      router.push('/');
-                    }}
-                    className="w-full text-left flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors cursor-pointer border-none bg-transparent outline-none mt-1 pt-2 border-t border-border/40"
-                  >
-                    <FiLogOut className="text-sm" />
-                    <span>Logout</span>
-                  </button>
-                </div>
+                    <button 
+                      onClick={() => {
+                        logoutUser();
+                        setIsProfileDropdownOpen(false);
+                        toast.success('Logged out successfully.');
+                        router.push('/');
+                      }}
+                      className="w-full text-left flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 hover:text-red-500 transition-colors cursor-pointer border-none bg-transparent outline-none mt-1 pt-2 border-t border-border/40"
+                    >
+                      <FiLogOut className="text-sm" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )
               )}
             </div>
 
@@ -302,40 +351,70 @@ export default function Navbar() {
           {/* Mobile Drawer Account Links */}
           <div className="border-t border-border pt-3 space-y-2.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">My Account</p>
-            <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
-              <Link href="/account?tab=profile" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
-                Profile
-              </Link>
-              <Link href="/account?tab=orders" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
-                Orders
-              </Link>
-              <Link href="/account?tab=addresses" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
-                Addresses
-              </Link>
-              <Link href="/account?tab=coupons" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
-                Coupons
-              </Link>
-              <Link href="/account?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer col-span-2">
-                Settings
-              </Link>
-            </div>
-            <div className="border-t border-border/60 pt-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <img src={userProfile.photo} alt={userProfile.name} className="h-7 w-7 rounded-full object-cover" />
-                <span className="text-xs font-bold text-text truncate max-w-[120px]">{userProfile.name}</span>
+            {!isLoggedIn ? (
+              // Guest Mobile Links
+              <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                <Link href="/auth?tab=login" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                  Login
+                </Link>
+                <Link href="/auth?tab=register" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                  Register
+                </Link>
+                <button 
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    toast('Help Center: Call 1800-NEX-CART for support.', { icon: '📞' });
+                  }}
+                  className="block w-full rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer text-xs font-semibold border-none outline-none col-span-2"
+                >
+                  Help Center
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  logoutUser();
-                  setIsMobileMenuOpen(false);
-                  toast.success('Logged out successfully.');
-                  router.push('/');
-                }}
-                className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border-none cursor-pointer hover:bg-red-500 hover:text-white transition-all flex items-center gap-1"
-              >
-                <FiLogOut /> Logout
-              </button>
-            </div>
+            ) : (
+              // Logged-In Mobile Links
+              <>
+                <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+                  <Link href="/account?tab=profile" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                    Profile
+                  </Link>
+                  <Link href="/account?tab=orders" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                    Orders
+                  </Link>
+                  <Link href="/account?tab=addresses" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                    Addresses
+                  </Link>
+                  <Link href="/account?tab=coupons" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer">
+                    Coupons
+                  </Link>
+                  <Link href="/account?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="block rounded-lg bg-background px-3 py-2 hover:text-primary transition-colors text-center cursor-pointer col-span-2">
+                    Settings
+                  </Link>
+                </div>
+                <div className="border-t border-border/60 pt-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {userProfile.photo ? (
+                      <img src={userProfile.photo} alt={userProfile.name} className="h-7 w-7 rounded-full object-cover" />
+                    ) : (
+                      <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                        {userProfile.name.charAt(0)}
+                      </div>
+                    )}
+                    <span className="text-xs font-bold text-text truncate max-w-[120px]">{userProfile.name}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      logoutUser();
+                      setIsMobileMenuOpen(false);
+                      toast.success('Logged out successfully.');
+                      router.push('/');
+                    }}
+                    className="text-xs font-bold text-red-500 bg-red-500/10 px-3 py-1.5 rounded-full border-none cursor-pointer hover:bg-red-500 hover:text-white transition-all flex items-center gap-1"
+                  >
+                    <FiLogOut /> Logout
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
         </div>

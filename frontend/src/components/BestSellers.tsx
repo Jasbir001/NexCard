@@ -14,13 +14,17 @@ export default function BestSellers() {
   }, []);
 
   // 1. Get products, cart, wishlist helpers from context
-  const { products, cart, addToCart, updateCartQty, toggleWishlist, isInWishlist } = useStore();
+  const { products, cart, addToCart, updateCartQty, toggleWishlist, isInWishlist, isLoggedIn, setAuthModalOpen } = useStore();
 
   // Slice the first 4 items from our global products array to represent "Best Sellers"
   const bestSellerProducts = products.slice(0, 4);
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault(); // Prevent navigating to details page
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     toast.success(`${product.name} added to cart!`, { icon: '🛒' });
   };
@@ -28,6 +32,10 @@ export default function BestSellers() {
   const handleToggleWishlist = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation(); // Stop event bubbling to parent <Link>
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     toggleWishlist(product);
     const wishlisted = isInWishlist(product.id);
     if (!wishlisted) {

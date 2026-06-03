@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '../../src/context/StoreContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   FiTrash2, 
   FiShoppingCart, 
@@ -14,7 +15,17 @@ import toast, { Toaster } from 'react-hot-toast';
 
 export default function WishlistPage() {
   // 1. Get wishlist and shopping cart triggers from context
-  const { wishlist, toggleWishlist, addToCart } = useStore();
+  const { wishlist, toggleWishlist, addToCart, isLoggedIn } = useStore();
+  const router = useRouter();
+
+  // Guard routing: redirect to /auth if not logged in
+  useEffect(() => {
+    const savedLoggedIn = localStorage.getItem('nexcart-logged-in');
+    const checkedLoggedIn = savedLoggedIn ? JSON.parse(savedLoggedIn) : false;
+    if (!checkedLoggedIn) {
+      router.push('/auth?redirect=/wishlist');
+    }
+  }, [isLoggedIn, router]);
 
   const handleAddToCart = (product: any) => {
     addToCart(product);

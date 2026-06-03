@@ -42,7 +42,9 @@ export default function ProductDetailsPage() {
     updateCartQty,
     recentlyViewed,
     addRecentlyViewed,
-    addProductReview
+    addProductReview,
+    isLoggedIn,
+    setAuthModalOpen
   } = useStore();
 
   // Resolve ID from parameters
@@ -121,17 +123,29 @@ export default function ProductDetailsPage() {
 
   // Add item to cart
   const handleAddToCart = () => {
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     toast.success('Added to your Shopping Cart!', { icon: '🛒' });
   };
 
   // Buy Now: adds to cart and redirects immediately to Cart page
   const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     router.push('/cart');
   };
 
   const handleToggleWishlist = () => {
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     toggleWishlist(product);
     if (!isFavorite) {
       toast.success('Added to Wishlist!');
@@ -214,6 +228,10 @@ export default function ProductDetailsPage() {
 
   // Add checked bundle items to cart
   const handleAddBundleToCart = () => {
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     let count = 1;
     bundleItems.forEach(item => {

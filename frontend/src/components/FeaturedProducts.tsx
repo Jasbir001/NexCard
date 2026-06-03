@@ -20,7 +20,7 @@ export default function FeaturedProducts() {
   const searchQuery = searchParams ? searchParams.get('search') || '' : '';
 
   // Get products, cart, wishlist helpers from global Store Context
-  const { products, addToCart, toggleWishlist, isInWishlist, cart, updateCartQty } = useStore();
+  const { products, addToCart, toggleWishlist, isInWishlist, cart, updateCartQty, isLoggedIn, setAuthModalOpen } = useStore();
 
   // 2. Filter products dynamically based on the search input query
   const filteredProducts = products.filter((product) => {
@@ -35,6 +35,10 @@ export default function FeaturedProducts() {
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault(); // Prevent navigating to details page
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     toast.success(`${product.name} added to cart!`, { icon: '🛒' });
   };
@@ -42,6 +46,10 @@ export default function FeaturedProducts() {
   const handleToggleWishlist = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation(); // Stop event bubbling to parent <Link>
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     toggleWishlist(product);
     const wishlisted = isInWishlist(product.id);
     if (!wishlisted) {

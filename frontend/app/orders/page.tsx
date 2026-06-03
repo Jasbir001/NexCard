@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore, Order } from '../../src/context/StoreContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   FiPackage, 
   FiTruck, 
@@ -14,7 +15,17 @@ import {
 } from 'react-icons/fi';
 
 export default function OrdersPage() {
-  const { orders } = useStore();
+  const { orders, isLoggedIn } = useStore();
+  const router = useRouter();
+
+  // Guard routing: redirect to /auth if not logged in
+  useEffect(() => {
+    const savedLoggedIn = localStorage.getItem('nexcart-logged-in');
+    const checkedLoggedIn = savedLoggedIn ? JSON.parse(savedLoggedIn) : false;
+    if (!checkedLoggedIn) {
+      router.push('/auth?redirect=/orders');
+    }
+  }, [isLoggedIn, router]);
 
   // 1. Defined Order Status Flow Timeline steps
   const trackingSteps = [

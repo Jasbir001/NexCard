@@ -46,11 +46,21 @@ function AccountDashboardContent() {
     deleteSavedPayment,
     wishlist,
     orders,
-    logoutUser 
+    logoutUser,
+    isLoggedIn
   } = useStore();
 
   // Active tab state
   const [activeTab, setActiveTab] = useState('profile');
+
+  // Guard routing: redirect to /auth if not logged in
+  useEffect(() => {
+    const savedLoggedIn = localStorage.getItem('nexcart-logged-in');
+    const checkedLoggedIn = savedLoggedIn ? JSON.parse(savedLoggedIn) : false;
+    if (!checkedLoggedIn) {
+      router.push('/auth?redirect=/account');
+    }
+  }, [isLoggedIn, router]);
 
   // Sync tab with URL search parameter
   useEffect(() => {

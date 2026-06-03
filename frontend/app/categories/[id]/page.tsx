@@ -18,7 +18,7 @@ export default function CategoryPage() {
 
   const categoryId = params.id ? String(params.id).toLowerCase() : '';
 
-  const { products, cart, addToCart, updateCartQty, toggleWishlist, isInWishlist } = useStore();
+  const { products, cart, addToCart, updateCartQty, toggleWishlist, isInWishlist, isLoggedIn, setAuthModalOpen } = useStore();
 
   // Sorting & Filtering States
   const [sortBy, setSortBy] = useState<string>('default');
@@ -63,6 +63,10 @@ export default function CategoryPage() {
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     addToCart(product);
     toast.success(`${product.name} added to cart!`, { icon: '🛒' });
   };
@@ -70,6 +74,10 @@ export default function CategoryPage() {
   const handleToggleWishlist = (e: React.MouseEvent, product: any) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isLoggedIn) {
+      setAuthModalOpen(true);
+      return;
+    }
     toggleWishlist(product);
     const wishlisted = isInWishlist(product.id);
     if (!wishlisted) {

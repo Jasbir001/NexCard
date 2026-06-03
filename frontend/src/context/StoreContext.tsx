@@ -139,6 +139,11 @@ interface StoreContextType {
   addRecentlyViewed: (productId: number) => void;
   addProductReview: (productId: number, rating: number, text: string, name: string, image?: string) => void;
   logoutUser: () => void;
+  isLoggedIn: boolean;
+  isAuthModalOpen: boolean;
+  setAuthModalOpen: (open: boolean) => void;
+  loginUserAction: (emailOrPhone: string, password: string) => boolean;
+  registerUserAction: (name: string, phone: string, email: string, password: string) => boolean;
 }
 
 
@@ -500,6 +505,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponDiscountPercent, setCouponDiscountPercent] = useState<number>(0);
 
+  // Authentication states
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+
   // Account management states
   const [userProfile, setUserProfile] = useState<UserProfile>(defaultProfile);
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>(defaultAddresses);
@@ -536,6 +545,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const savedRewards = localStorage.getItem('nexcart-rewards');
     const savedPays = localStorage.getItem('nexcart-payments');
     const savedRecent = localStorage.getItem('nexcart-recent');
+    const savedLoggedIn = localStorage.getItem('nexcart-logged-in');
 
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedWish) setWishlist(JSON.parse(savedWish));
@@ -546,6 +556,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (savedRewards) setCouponsAndRewards(JSON.parse(savedRewards));
     if (savedPays) setSavedPayments(JSON.parse(savedPays));
     if (savedRecent) setRecentlyViewed(JSON.parse(savedRecent));
+    if (savedLoggedIn) setIsLoggedIn(JSON.parse(savedLoggedIn));
   }, []);
 
   const saveCartToStorage = (newCart: CartItem[]) => {
@@ -738,7 +749,63 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('nexcart-products', JSON.stringify(updatedProducts));
   };
 
+  const loginUserAction = (emailOrPhone: string, password: string): boolean => {
+    if (!emailOrPhone || !password) return false;
+    
+    setIsLoggedIn(true);
+    localStorage.setItem('nexcart-logged-in', 'true');
+    
+    const existingProfile = localStorage.getItem('nexcart-profile');
+    if (existingProfile) {
+      setUserProfile(JSON.parse(existingProfile));
+    } else {
+      const parts = emailOrPhone.split('@');
+      const mockName = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : 'Jasbir Singh';
+      const updated = {
+        name: mockName,
+        email: emailOrPhone.includes('@') ? emailOrPhone : 'jasbir@example.com',
+        phone: !emailOrPhone.includes('@') ? emailOrPhone : '+91 9876543210',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        memberSince: 'June 2026'
+      };
+      setUserProfile(updated);
+      localStorage.setItem('nexcart-profile', JSON.stringify(updated));
+    }
+    
+    setSavedAddresses(defaultAddresses);
+    setSavedPayments(defaultPayments);
+    setCouponsAndRewards(defaultCouponsAndRewards);
+    
+    return true;
+  };
+
+  const registerUserAction = (name: string, phone: string, email: string, password: string): boolean => {
+    if (!name || !phone || !email || !password) return false;
+    
+    setIsLoggedIn(true);
+    localStorage.setItem('nexcart-logged-in', 'true');
+    
+    const updated = {
+      name,
+      email,
+      phone: phone.startsWith('+91') ? phone : '+91 ' + phone,
+      photo: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      memberSince: 'June 2026'
+    };
+    setUserProfile(updated);
+    localStorage.setItem('nexcart-profile', JSON.stringify(updated));
+    
+    setSavedAddresses(defaultAddresses);
+    setSavedPayments(defaultPayments);
+    setCouponsAndRewards(defaultCouponsAndRewards);
+    
+    return true;
+  };
+
   const logoutUser = () => {
+    setIsLoggedIn(false);
+    localStorage.setItem('nexcart-logged-in', 'false');
+    
     setUserProfile({
       name: 'Guest User',
       email: 'guest@example.com',
@@ -754,10 +821,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       rewardPoints: 0,
       cashbackHistory: []
     });
+    clearCart();
     localStorage.removeItem('nexcart-profile');
     localStorage.removeItem('nexcart-addresses');
     localStorage.removeItem('nexcart-payments');
     localStorage.removeItem('nexcart-rewards');
+    localStorage.removeItem('nexcart-cart');
   };
 
   return (
@@ -793,7 +862,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       recentlyViewed,
       addRecentlyViewed,
       addProductReview,
-      logoutUser
+      logoutUser,
+      isLoggedIn,
+      isAuthModalOpen,
+      setAuthModalOpen,
+      loginUserAction,
+      registerUserAction
     }}>
       {children}
     </StoreContext.Provider>

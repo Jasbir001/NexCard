@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore, OrderAddress } from '../../src/context/StoreContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -17,7 +17,16 @@ import toast, { Toaster } from 'react-hot-toast';
 
 export default function CartPage() {
   const router = useRouter();
-  const { cart, updateCartQty, removeFromCart, placeOrder } = useStore();
+  const { cart, updateCartQty, removeFromCart, placeOrder, isLoggedIn } = useStore();
+
+  // Guard routing: redirect to /auth if not logged in
+  useEffect(() => {
+    const savedLoggedIn = localStorage.getItem('nexcart-logged-in');
+    const checkedLoggedIn = savedLoggedIn ? JSON.parse(savedLoggedIn) : false;
+    if (!checkedLoggedIn) {
+      router.push('/auth?redirect=/cart');
+    }
+  }, [isLoggedIn, router]);
 
   // 1. React States for address form
   const [address, setAddress] = useState<OrderAddress>({
